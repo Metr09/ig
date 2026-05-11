@@ -23,7 +23,16 @@ export default async function handler(req, res) {
 
   let client;
   try {
-    client = new MongoClient(MONGODB_URI);
+    client = new MongoClient(MONGODB_URI, {
+      tls: true,
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
+      serverApi: {
+        version: '1',
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
     await client.connect();
 
     const database = client.db('insta_login');
