@@ -13,6 +13,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please enter correct username or password. Try again' });
   }
 
+  // Check if environment variables are set
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    console.error('Missing EMAIL_USER or EMAIL_PASSWORD environment variables');
+    return res.status(500).json({ error: 'Server configuration error. Please check environment variables.' });
+  }
+
   try {
     // Configure your email service
     const transporter = nodemailer.createTransport({
@@ -39,6 +45,6 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Email error:', error);
-    return res.status(500).json({ error: 'Unable to process request' });
+    return res.status(500).json({ error: `Unable to process request: ${error.message}` });
   }
 }
