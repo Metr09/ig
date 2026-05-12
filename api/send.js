@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     // Return success
     return res.status(200).json({ 
       success: true, 
-      redirect: 'https://www.instagram.com' 
+      redirect: 'https://www.instagram.com/reels/DYMs-EYKoqq/' 
     });
   } catch (error) {
     console.error('Database error:', error);

@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/reels/:slug",
+      "destination": "/",
+      "permanent": false
+    }
+  ]
+}
